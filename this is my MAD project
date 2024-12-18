@@ -1,0 +1,215 @@
+import 'package:flutter/material.dart';
+import 'dart:async';
+
+void main() {
+  runApp(StopwatchApp());
+}
+
+class StopwatchApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: TimerScreen(),
+    );
+  }
+}
+
+class TimerScreen extends StatefulWidget {
+  @override
+  _TimerScreenState createState() => _TimerScreenState();
+}
+
+class _TimerScreenState extends State<TimerScreen> {
+  late Stopwatch _stopwatch;
+  late Timer _timer;
+  Duration _countdownDuration = Duration(minutes: 1);
+  Duration _currentCountdown = Duration.zero;
+  bool _isCountdownRunning = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _stopwatch = Stopwatch();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+      setState(() {
+        if (_isCountdownRunning) {
+          if (_currentCountdown > Duration.zero) {
+            _currentCountdown -= Duration(milliseconds: 100);
+          } else {
+            _isCountdownRunning = false;
+            _timer.cancel();
+            // Optional: Add a sound or notification when countdown ends
+          }
+        }
+      });
+    });
+  }
+
+  void _startStopwatch() {
+    if (!_stopwatch.isRunning) {
+      _stopwatch.start();
+      _startTimer();
+    }
+  }
+
+  void _stopStopwatch() {
+    if (_stopwatch.isRunning) {
+      _stopwatch.stop();
+      _timer.cancel();
+    }
+  }
+
+  void _resetStopwatch() {
+    _stopwatch.reset();
+    setState(() {});
+  }
+
+  void _startCountdown() {
+    if (!_isCountdownRunning) {
+      _currentCountdown = _countdownDuration;
+      _isCountdownRunning = true;
+      _startTimer();
+    }
+  }
+
+  void _resetCountdown() {
+    _currentCountdown = _countdownDuration;
+    _isCountdownRunning = false;
+    setState(() {});
+  }
+
+  String _formattedTime(Duration duration) {
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds % 60;
+    final milliseconds = (duration.inMilliseconds % 1000) ~/ 100;
+    return "$minutes:${seconds.toString().padLeft(2, '0')}.${milliseconds}";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Stopwatch & Timer'),
+        centerTitle: true,
+        backgroundColor: Colors.teal,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade200, Colors.purple.shade200],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: Text(
+                'Abdullah Jamal',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  backgroundColor: Colors.black54,
+                ),
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Stopwatch',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  _formattedTime(_stopwatch.elapsed),
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                      ),
+                      onPressed: _startStopwatch,
+                      child: Text('Start'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      onPressed: _stopStopwatch,
+                      child: Text('Stop'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                      ),
+                      onPressed: _resetStopwatch,
+                      child: Text('Reset'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 40),
+                Text(
+                  'Countdown Timer',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  _formattedTime(_currentCountdown),
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                      ),
+                      onPressed: _startCountdown,
+                      child: Text('Start Timer'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                      ),
+                      onPressed: _resetCountdown,
+                      child: Text('Reset Timer'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
